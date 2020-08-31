@@ -1,0 +1,30 @@
+---
+title: Test Post
+author: Matt Pickard
+date: '2020-08-31'
+slug: test-post
+categories: []
+tags: []
+subtitle: ''
+summary: 'Writing a test post.'
+authors: []
+lastmod: '2020-08-31T14:32:37-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+# This is a test post
+Writing some explanation.
+
+Here is a code chunk.
+
+```{r}
+library(dplyr)
+library(tidyr)
+mtcars %>% select(cyl)
+```
+
