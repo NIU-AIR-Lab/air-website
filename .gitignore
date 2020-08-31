@@ -6,9 +6,6 @@ resources/
 public/
 .Rproj.user
 
-# RStudio
-themes/
-
 # History files
 .Rhistory
 .Rapp.history
