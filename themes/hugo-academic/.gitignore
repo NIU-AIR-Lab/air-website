@@ -1,13 +1,5 @@
-# IDEs
-.idea/
-
-# Hugo
-resources/
-public/
-.Rproj.user
-
 # History files
-.Rhistory
+*.Rhistory
 .Rapp.history
 
 # Session Data files
@@ -45,6 +37,19 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# IDE specific
+.idea/
+.vscode/
+
+# Hugo
+exampleSite/public/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
 
 # Other
 *.txt

@@ -1,0 +1,11 @@
+# Font style metadata
+name = "NIU"
+
+# Optional Google font URL
+google_fonts = "Raleway:ital,wght@0,400;0,700;1,400|Roboto:400,400italic,700|Roboto+Mono"
+
+# Font families
+heading_font = "Raleway"
+body_font = "Raleway"
+nav_font = "Raleway"
+mono_font = "Roboto Mono"
