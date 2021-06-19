@@ -1,0 +1,43 @@
+---
+title: 'Intrinsic Validation: Pearson and Spearman Correlation Coefficient'
+author: Alex Wold
+date: '2021-06-13'
+slug: intrinsic-validation-pearson-and-spearman-correlation-coefficient
+categories:
+  - Intrinsic Validation
+tags:
+  - Pearson Correlation Coefficient
+  - Spearman Correlation Coefficient
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-13T02:24:15-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+A 'good' embedding refers to a set of word representations that captures the syntactic and semantic relationships set forth by humans, and comparing similarity scores provides an approachable method for measuring these qualities.  
+We can supply our model with two words and ask it to calculate the (cosine) similarity between them. Then, we can analyze the relationship between the machine's estimates and a set of tax professional's (human) judgments to evaluate the performance of our embedding. If the tensors accurately embody the meaning behind the text, we should observe a strong positive correlation between the two scores. No correlation would imply that our word vectors fail at representing anything usable - negative correlation would suggest that the model stores inverted semantic and syntactic relationships.  
+Independent from the direction of proportionality, the type of correlation requires different sets of prior assumptions and defines the output's overall utility. Pearsons's correlation coefficient requires the data to follow a bivariate, normal distribution, and it assumes a linear relationship between the two sets of similarity scores. This definition enforces a strict series of standards on the variable embedding, which may not describe actuality; Therefore, this computation serves better to supplement the Spearman correlation coefficient than to stand on its own.  
+The Spearman correlation coefficient takes a non-parametric approach to the same problem, so it makes no assumptions about the distribution of the similarity data. Instead, this metric only posits a monotonic relationship between the model and human responses. This allows us to forgo the restrictions imposed by the Pearson coefficient.
+The **Gensim** module supplies the `evaluate_word_pairs()` function, an operation that uses cosine similarity to calculate the word vector distance and reports both the Pearson and Spearman values. In addition, it provides the percentage of OOV (out of vocabulary) terms, as in the following example:  
+```{r, echo = FALSE}
+library(lemon)
+library(knitr)
+
+knitr::opts_chunk$set(fig.path = "static")
+knit_print.data.frame <- lemon_print
+```
+
+```{r, echo = FALSE, render = lemon_print, caption = "Correlation Output"}
+simframe <- data.frame(pearson = .380,
+                       pearson.pval = .003,
+                       spearman = .370,
+                       spearman.pval = .004,
+                       unknown = 0)
+simframe
+```
+Notice, `evaluate_word_pairs()` also reports a p-value for each coefficient. This determines whether or not the estimate maintains any statistical significance, depending on the $\alpha$ threshold.

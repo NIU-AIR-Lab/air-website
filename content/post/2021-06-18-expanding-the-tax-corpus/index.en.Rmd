@@ -1,0 +1,25 @@
+---
+title: Expanding the Tax Corpus
+author: Alex Wold
+date: '2021-06-18'
+slug: expanding-the-tax-corpus
+categories:
+  - Tax Corpus
+tags:
+  - ParseHub
+  - Scraping
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-18T01:59:30-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+Unfortunately, just the [IRC](https://www.law.cornell.edu/uscode/text/26) and [ECFR](https://www.ecfr.gov/cgi-bin/ECFR?page=browse) alone don't provide enough data for an acceptable vocabulary size. Too often, similarity pairs and analogy tuples fail to contribute to the testing metrics because the comparison terms fall short of the vector inclusion threshold. Therefore, we decided to attach a series of IRS [instructions](https://www.irs.gov/instructions), [publications](https://www.irs.gov/publications), and [bulletins](https://www.irs.gov/irb?page=0) to expand the tax corpora and better equip the embedding for more involved performance evaluation.  
+The IRS never posted the supplementary resources in a conveniently tagged XML format, so we used ParseHub (a UI based web scraping platform) to rip the HTML URLs for each instruction, publication, and bulletin for a total of 549 new tax passages. ![](/images/ParseHub.png)
+
+To capture the actual text from the downloaded material, we used the `rvest` package and its suite of HTML functions to itemize each page into a list of character vectors, which we attached to the original set of corpora for further model creation.

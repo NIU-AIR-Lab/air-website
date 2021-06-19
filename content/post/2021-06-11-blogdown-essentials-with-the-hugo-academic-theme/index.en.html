@@ -1,0 +1,39 @@
+---
+title: Blogdown Essentials with the Hugo-Academic Theme
+author: Alex Wold
+date: '2021-06-11'
+slug: blogdown-essentials-with-the-hugo-academic-theme
+categories:
+  - Blogdown
+tags:
+  - Latex
+  - Plots
+  - Images
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-11T02:06:57-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+<p>The Hugo-Academic Theme provides an exhaustive array of widget-empowered functionality that’s perfect for publishing academic work. This theme establishes a solid foundation within the R ecosystem that enables its users to profit from its clean and responsive architecture. Therefore, we’ll use and expand this interface to present our work regarding NIU’s accountancy-driven Artificial Intelligence Research (AIR) Lab.</p>
+<p>The Hugo-Academic framework offers an impressive library of features, but it doesn’t give us everything we need right out of the box. Fortunately, the developers built this theme with flexibility in mind, and we’ll take advantage of its adaptable nature to provide two key operations: Plotting and <span class="math inline">\(\LaTeX\)</span>.</p>
+<p>When rendering plots from .Rmd chunks, knitr tends to write them to the <code>figure/</code> path relative to the working directory; however, Hugo assumes all of this content resides in the <code>static/</code> folder. Luckily, we can describe most charts and graphs as static web assets, since they’re just images. Therefore, we only have to set the appropriate knitr chunk option to properly post the correct output.</p>
+<pre class="r"><code>knitr::opts_chunk$set(fig.path = &quot;static&quot;)</code></pre>
+<p>The plots should now appear on the page.</p>
+<p>By default, Hugo-Academic disables math related rendering, so the website won’t correctly display <span class="math inline">\(\LaTeX\)</span> script on any posted pages. Thankfully, this theme provides a convenient switch so we don’t have to override or rework any of the template files. In the <code>[params]</code> section of the <code>config.toml</code> file or in the <code>params.toml</code> file itself (within the root directory), we can just set math option to true.</p>
+<pre><code># Enable LaTeX math rendering? true/false
+#   If false, you can enable math on a per page basis as needed.
+math = true</code></pre>
+<p><span class="math inline">\(\LaTeX\)</span> should render correctly now, just make sure not to include a space between the activation symbols.</p>
+<p>For example:</p>
+<p><code>$\sqrt{7x+9}$</code> renders <span class="math inline">\(\sqrt{7x+9}\)</span><br />
+but <code>$ \sqrt{7x+9} $</code> renders nothing.</p>

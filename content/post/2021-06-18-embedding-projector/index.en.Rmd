@@ -1,0 +1,42 @@
+---
+title: Embedding Projector
+author: Alex Wold
+date: '2021-06-18'
+slug: embedding-projector
+categories:
+  - Embedding
+  - Tensorboard
+  - Projector
+tags:
+  - Tensorboard
+  - Projector
+  - PCA
+  - Visualization
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-18T04:51:07-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+Similarities and analogies offer insightful measures for evaluating embedding performance, but Tensorboard, a project offshoot of Tensorflow, provides a completely different set of tools for analyzing vector representations in relatively few dimensions: PCA visualization. The [webpage](https://projector.tensorflow.org/) requires two initial documents to properly animate the embedding: a tab-delimited TSV file of word tensors, and another tab-delimited TSV file of their respective metadata.  
+Together, this information builds a three-dimensional plot that allows the user to search for terms, find nearest neighbors (by cosine or euclidean distance), and restructure the data in the form of UMAP or T-SNE charts.
+
+
+<center>
+**Try it out for yourself:** Download the following two files, follow the webpage link above, and use the 'Load' option to visualize one of our earlier embeddings.
+</center>
+<center>
+<a href="/media/vectors.tsv" download="vectors.tsv">
+  Vectors
+</a>
+</center>  
+<center>
+<a href="/media/metadata.tsv" download="metadata.tsv">
+  Metadata
+</a>
+</center>

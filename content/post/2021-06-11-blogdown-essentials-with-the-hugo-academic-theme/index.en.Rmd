@@ -1,0 +1,49 @@
+---
+title: Blogdown Essentials with the Hugo-Academic Theme
+author: Alex Wold
+date: '2021-06-11'
+slug: blogdown-essentials-with-the-hugo-academic-theme
+categories:
+  - Blogdown
+tags:
+  - Latex
+  - Plots
+  - Images
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-11T02:06:57-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+The Hugo-Academic Theme provides an exhaustive array of widget-empowered functionality that's perfect for publishing academic work. This theme establishes a solid foundation within the R ecosystem that enables its users to profit from its clean and responsive architecture. Therefore, we'll use and expand this interface to present our work regarding NIU's accountancy-driven Artificial Intelligence Research (AIR) Lab.  
+
+The Hugo-Academic framework offers an impressive library of features, but it doesn't give us everything we need right out of the box. Fortunately, the developers built this theme with flexibility in mind, and we'll take advantage of its adaptable nature to provide two key operations: Plotting and $\LaTeX$.  
+
+
+When rendering plots from .Rmd chunks, knitr tends to write them to the `figure/` path relative to the working directory; however, Hugo assumes all of this content resides in the `static/` folder. Luckily, we can describe most charts and graphs as static web assets, since they're just images. Therefore, we only have to set the appropriate knitr chunk option to properly post the correct output.
+
+```{r, eval = FALSE}
+knitr::opts_chunk$set(fig.path = "static")
+```
+
+The plots should now appear on the page.
+
+
+By default, Hugo-Academic disables math related rendering, so the website won't correctly display $\LaTeX$ script on any posted pages. Thankfully, this theme provides a convenient switch so we don't have to override or rework any of the template files. In the `[params]` section of the `config.toml` file or in the `params.toml` file itself (within the root directory), we can just set math option to true.
+```
+# Enable LaTeX math rendering? true/false
+#   If false, you can enable math on a per page basis as needed.
+math = true
+```
+
+$\LaTeX$ should render correctly now, just make sure not to include a space between the activation symbols.  
+  
+For example:  
+
+`$\sqrt{7x+9}$` renders $\sqrt{7x+9}$  
+but `$ \sqrt{7x+9} $` renders nothing.

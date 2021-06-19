@@ -2,8 +2,8 @@
 .idea/
 
 # Hugo
-resources/
-public/
+/resources/
+/public/
 .Rproj.user
 
 # History files
@@ -48,3 +48,5 @@ vignettes/*.pdf
 
 # Other
 *.txt
+.DS_Store
+Thumbs.db

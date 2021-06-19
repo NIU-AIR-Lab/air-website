@@ -1,0 +1,27 @@
+---
+title: Intrinsic and Extrinsic Evaluators
+author: Alex Wold
+date: '2021-06-13'
+slug: intrinsic-and-extrinsic-evaluators
+categories:
+  - Intrinsic Validation
+  - Extrinsic Validation
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-13T02:34:39-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+Generating a set of word embeddings, by itself, says nothing about their actual utility. We need some way to judge their performances so that we can screen for the most useful model, one that most accurately encodes the true meanings of the words and the relationships between them. Unfortunately, this problem isn't simple, and the complex solutions rely on the key assumptions that define what it means to be a 'good' tax-related word embedding.  
+
+Language was made by humans for humans; therefore, any decent computer embedding meant to accurately embody a collection of tax corpora should reflect the human intelligence behind the source material. This fundamental assumption motivates our definition for a 'good' tax related model: one that captures the true substance of the internal revenue code (specifically title 26) and the code of federal regulations.  
+
+Defining a proper definition for 'good' allows us to develop processes for measuring embedding performance, which we can partition into two main categories: Intrinsic and Extrinsic. **Intrinsic Validation** tests the quality of representations (vectors) independent of downstream tasks, like POS tagging, paragraph summarization, or information grouping. Essentially, it evaluates the direct structures and meanings of the words in relation to how a human would. For the IRC and ECFR, we apply two fundamental measures: similarities and analogies. Conversely, **Extrinsic Validation** tests the quality of representations based on the embedding's execution of actual use cases - the downstream tasks mentioned above.
+
+Together, these tools allow us to craft, judge, and employ our models in a variety of applications that will help demystify and digest complicated tax corpora.

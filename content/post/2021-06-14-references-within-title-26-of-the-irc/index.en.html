@@ -1,0 +1,35 @@
+---
+title: References within the IRC
+author: Alex Wold
+date: '2021-06-14'
+slug: references-within-title-26-of-the-irc
+categories:
+  - References
+  - IRC
+tags:
+  - Title 26
+  - IRC
+  - References
+  - Regex
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-14T00:56:18-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+<p>For a computer to better ‘understand’ the Internal Revenue Code, it must contextualize the partitioning system that defines Title 26. In total, the document comprises over 9,000 sections, most of which refer to others in their own descriptions. Each section denotes a particular code of conduct surrounding a unified theme in tax law; therefore, it’s possible to treat every section reference as word with its own meaning. In our case, we implement both FastText and Word2Vec algorithms to construct the tax models, which consider context in the form of n-grams. We posit, therefore, that section references appear in the cases that illustrate them. Under this assumption, an embedding should assign a tensor to each of these boundaries; however, the IRC also contains even more elementary subdivisions, as denoted in the <a href="https://uscode.house.gov/download/resources/USLM-User-Guide.pdf#page=28">user guide</a> (page 28). For now, we count all recognized references (detailed below as well), no matter how deep, as their own term in the vocabulary.
+<img src="/images/references.jpg" />
+Here, we delineate between internal and external references, counting the <em>section</em> tier as base level. <strong>Internal References</strong> refer to information inside of a particular section, while <strong>External References</strong> do the opposite. For the purpose of this project, we mostly disregard (though we do account for) the external references aside from the section number.</p>
+<p>To recognize section references (and all other sublevel references) we use regex to find and replace these occurrences with one word that accurately describes the allusion. For example, we use:</p>
+<pre class="r"><code>section_ref &lt;- &quot;\\b[Ss]ections?(?&gt;\\s?(?&gt;(?&gt;\\d{1,4}?(?&gt;\\(\\w{1,3}\\))*)|(?&gt;(?&gt;(?&gt;and)|(?&gt;or)))),?)*&quot;</code></pre>
+<p>to first identify most conceivable section references within the IRC. Then, we eliminate all parentheses and replace all spaces with underscores to pack allusions into one succinct vocabulary word, e.g.:<br />
+<strong>section 7703</strong><span class="math inline">\(\longrightarrow\)</span><strong>section_7703</strong></p>

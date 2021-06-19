@@ -1,0 +1,63 @@
+---
+title: 'Intrinsic Validation: Analogy Accuracy and Transparency'
+author: Alex Wold
+date: '2021-06-13'
+slug: intrinsic-validation-analogy-accuracy-and-transparency
+categories:
+  - Intrinsic Validation
+  - Analogies
+tags:
+  - Accuracy
+  - Transparency
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-13T02:33:15-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+Comparing model similarity scores with human similarity scores offers valuable insights concerning the performances of our embeddings, but it isn’t the only way to screen for the best word representations. Alike in nature, analogies provide an alternative measure for gauging the quality of our vocabulary tensors, appearing in the form: <strong>a</strong> is to <strong>b</strong> as <strong>c</strong> is to <strong>d</strong>. For example,<br />
+
+<center>
+<code>amazing</code> is to <code>amazingly</code> as <code>apparent</code> is to <code>apparently</code>
+</center>
+Here, we note a difference in the syntactic axis from <em>amazing</em> to <em>amazingly</em> and from <em>apparent</em> to <em>apparently</em>. If we wanted to test for differences across the semantic dimension, we could use:<br />
+
+<center>
+<code>man</code> is to <code>king</code> as <code>woman</code> is to <code>queen</code>
+</center>
+<p>These examples reveal the fundamental purpose of our analogy pursuits, to test the embedding of its understanding regarding the changes and associations in linguistic features. We can provide the computer with the first three terms in the 4-tuple - <strong>a</strong>, <strong>b</strong>, and <strong>c</strong> - and ask it to assign its own value for <strong>d</strong>. Luckily, the python module <strong>Gensim</strong> supplies an <code>evaluate_word_analogies()</code> function that utilizes cosine similarity to perform that operation for us. The embedding adds terms <strong>b</strong> and <strong>c</strong>, subtracts <strong>a</strong>, and then finds the closest match within the vocabulary to give its final guess of <strong>d</strong>, which we then compare with the actual, listed answer.</p>
+<p>If even one of the terms doesn’t appear within the embedding vocabulary, we tag the analogy as OOV (out of vocabulary) and throw it out so that it doesn’t erroneously affect the output. In total, the accuracy percentage includes only the 4-tuples where each word appears in the vector argot, and where the model estimated the <strong>d</strong> term correctly the <em>first time</em>. Unfortunately, analogy evaluations tend to score much lower than similarity comparisons (usually around a 30% accurate for high scores), changing drastically depending on the OOV ratio.</p>
+<p>Gensim’s <code>evaluate_word_analogies()</code> function delivers a simple metric perfect for swift, broad judgment, but it doesn’t necessarily provide an embedding-by-embedding breakdown for each analogy. The <code>sections</code> member of the response offers a close estimation, but it fails to build a side-by-side comparison of the correct vs. the estimated <strong>d</strong> terms. Moreover, the function never lists any other alternative model solutions, leaving the product somewhat opaque in regards to how well our model can actually complete an analogy. Using only the default function as-is, we don’t really know how well the embedding “understands” the given text. As a result, we implemented a function of our own that incorporates this functionality. We borrowed the logic of Gensim’s method and included a more verbose set of reporting tools that records the first five guesses of our embedding and their respective cosine similarities:</p>
+<table>
+<caption><span id="tab:unnamed-chunk-2">Table 1: </span>Verbose Output (truncated at only 1 guess)</caption>
+<thead>
+<tr class="header">
+<th align="left">A</th>
+<th align="left">B</th>
+<th align="left">C</th>
+<th align="left">D</th>
+<th align="right">cosim1</th>
+<th align="left">guess1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tangible</td>
+<td align="left">depreciation</td>
+<td align="left">intangible</td>
+<td align="left">amortization</td>
+<td align="right">0.633</td>
+<td align="left">depreciated</td>
+</tr>
+</tbody>
+</table>
+<p>With a clearer idea of where our embeddings make mistakes, we can use the output to refine our training methods for a better set of word representations in the future.</p>
