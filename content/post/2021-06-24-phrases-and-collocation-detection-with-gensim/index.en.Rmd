@@ -1,0 +1,92 @@
+---
+title: Phrases and Collocation Detection with Gensim
+author: Alex Wold
+date: '2021-06-24'
+slug: phrases-and-collocation-detection-with-gensim
+categories:
+  - N-Grams
+tags:
+  - Gensim
+  - Collocation
+  - Phrases
+  - N-Grams
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-06-24T01:17:10-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+So far, we've used a set-list of replacement rules to incorporate n-grams within our tax-embeddings, but the Gensim Phrases library allows us to train a customized tokenizer to identify multiple-word terms specific to the IRS corpora using collocation detection. This pushes our model to capture expressions beyond the default unigram level and our own preservation strategies.
+
+It's easier to work directly in python when using the Gensim functionalities. Therefore, we'll start with the following libraries and load a our example corpus for training and testing.
+```{r}
+# load packages
+library(reticulate)
+library(stringr)
+library(tokenizers)
+
+# load the instructions (as object instext)
+textpath <- "/home/alex/Projects/taxembed/data/corpora/irs_corpi/instructions.rda"
+load(textpath)
+```
+*instructions.rda* refers to a vector of strings, where each string is the ripped text from an individual IRS instruction posting. We don't need all of the data for a simple trial run, so we'll just use the first four instruction texts (three for training, one for testing).
+
+Unfortunately, the example corpus isn't very clean; regex expressions, like `\n` and `\t`, riddle the text with symbols that don't belong in the n-gram vocabulary. Luckily, the `stringr` package provides a few removal functions that can target these expressions and eliminate duplicate spaces. Afterwords, we can apply a sentence and word tokenizer to split the data into the form of a list, where each entry consists of a character vector of the separated words. We then convert the objects to their python equivalents, where we can access them by `r.words` for the training set and `r.twords` for the testing set.
+```{r, results = 'hold'}
+# create example corpus
+excor <- paste(instext[1], instext[2], instext[3], instext[4], instext[5], instext[6])
+testcor <- instext[7]
+
+# replace regex characters and duplicate spaces
+excor <- str_replace_all(excor, pattern = "(\\n|\\t)+", replacement = " ")
+excor <- str_replace_all(excor, pattern = "\\s{2,}", replacement = " ")
+testcor <- str_replace_all(testcor, pattern = "(\\n|\\t)+", replacement = " ")
+testcor <- str_replace_all(testcor, pattern = "\\s{2,}", replacement = " ")
+
+# tokenize the string into sentences
+sentences <- unlist(tokenize_sentences(excor))
+testsents <- unlist(tokenize_sentences(testcor))
+
+# tokenize the sentences into words
+words <- lapply(sentences, tokenize_words)
+twords <- lapply(testsents, tokenize_words)
+
+# unlist the secondary lists for proper form
+for (i in 1:length(words)) {
+  words[[i]] <- unlist(words[i])
+}
+
+for (i in 1:length(twords)) {
+  twords[[i]] <- unlist(twords[i])
+}
+
+# convert the r object to a python object (# access with r.words in python chunk)
+r_to_py(words)
+r_to_py(twords)
+```
+
+It's easier to work directly in python when using the Gensim library, so we'll need to switch to an anaconda environment and load a few modules. Then, we train the first bigram and the succeeding trigram (by feeding the bigram through the first tgram).
+```{python}
+from gensim.models.phrases import Phrases, Phraser
+
+# first train a bigram
+bigram = Phrases(r.words)
+trigram = Phrases(bigram[r.words])
+```
+
+Using a portion of the testing data, we feed in a sentence and let the trigram connect the most likely bigrams together.
+```{python, warning = FALSE, message = FALSE, results = 'hold'}
+# print the original sentence
+print("Original Sentence:")
+print(r.twords[86])
+
+# run the sentence through the trigram model
+print(f"\n\nPhrased Sentence:")
+print(trigram[r.twords[86]])
+```
+Note that we don't see any trigrams in this example, but a quick look at the trigram model shows a plethora of 3 word tuples.
