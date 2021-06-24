@@ -90,3 +90,8 @@ print(f"\n\nPhrased Sentence:")
 print(trigram[r.twords[86]])
 ```
 Note that we don't see any trigrams in this example, but a quick look at the trigram model shows a plethora of 3 word tuples.
+
+^[https://radimrehurek.com/gensim/models/phrases.html]
+^[https://radimrehurek.com/gensim_3.8.3/models/phrases.html]
+^[https://tedboy.github.io/nlps/_modules/gensim/models/phrases.html]
+^[https://cran.r-project.org/web/packages/tokenizers/vignettes/introduction-to-tokenizers.html]
