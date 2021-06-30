@@ -35,7 +35,7 @@ library(tokenizers)
 # load the instructions (as object instext)
 textpath &lt;- &quot;/home/alex/Projects/taxembed/data/corpora/irs_corpi/instructions.rda&quot;
 load(textpath)</code></pre>
-<p><em>instructions.rda</em> refers to a vector of strings, where each string is the ripped text from an individual IRS instruction posting. We don’t need all of the data for a simple trial run, so we’ll just use the first four instruction texts (three for training, one for testing).</p>
+<p><em>instructions.rda</em> refers to a vector of strings, where each string is the ripped text from an individual IRS instruction posting. We don’t need all of the data for a simple trial run, so we’ll just use the first seven instruction texts (six for training, one for testing).</p>
 <p>Unfortunately, the example corpus isn’t very clean; regex expressions, like <code>\n</code> and <code>\t</code>, riddle the text with symbols that don’t belong in the n-gram vocabulary. Luckily, the <code>stringr</code> package provides a few removal functions that can target these expressions and eliminate duplicate spaces. Afterwords, we can apply a sentence and word tokenizer to split the data into the form of a list, where each entry consists of a character vector of the separated words. We then convert the objects to their python equivalents, where we can access them by <code>r.words</code> for the training set and <code>r.twords</code> for the testing set.</p>
 <pre class="r"><code># create example corpus
 excor &lt;- paste(instext[1], instext[2], instext[3], instext[4], instext[5], instext[6])
@@ -87,9 +87,31 @@ print(&quot;Original Sentence:&quot;)</code></pre>
 <pre><code>## 
 ## 
 ## Phrased Sentence:</code></pre>
-<pre class="python"><code>print(trigram[r.twords[86]])</code></pre>
-<pre><code>## [&#39;this_rule&#39;, &#39;does_not&#39;, &#39;apply&#39;, &#39;to&#39;, &#39;a&#39;, &#39;transfer&#39;, &#39;to&#39;, &#39;an_individual&#39;, &#39;who&#39;, &#39;is&#39;, &#39;not&#39;, &#39;a&#39;, &#39;lineal_descendant&#39;, &#39;of&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;if&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;has&#39;, &#39;any&#39;, &#39;living&#39;, &#39;lineal&#39;, &#39;descendants&#39;]</code></pre>
-<p>Note that we don’t see any trigrams in this example, but a quick look at the trigram model shows a plethora of 3 word tuples.</p>
+<pre class="python"><code>print(trigram[bigram[r.twords[86]]])</code></pre>
+<pre><code>## [&#39;this_rule&#39;, &#39;does_not_apply&#39;, &#39;to&#39;, &#39;a&#39;, &#39;transfer&#39;, &#39;to&#39;, &#39;an_individual&#39;, &#39;who&#39;, &#39;is&#39;, &#39;not&#39;, &#39;a&#39;, &#39;lineal_descendant&#39;, &#39;of&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;if&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;has&#39;, &#39;any&#39;, &#39;living&#39;, &#39;lineal_descendants&#39;]</code></pre>
+<p>Note: we must run the sentence through the bigram layer first, and then through the subsequent, higher-level phrasers thereafter. Some vocabulary terms look like 4-grams, but they’re just two bigrams attached in the trigram process.</p>
+<p>In the training stage, we can further adjust the phraser using the tuning parameters available with the <code>Phrases()</code> function. <em>min_count</em> will ignore all words and bigrams with total collected counts lower than the provided value, and <em>threshold</em> will determine the sensitivity of the model when detecting n-grams. The parser will accept Phrase A followed by Phrase B as a bigram only if it scores higher than this threshold value, which in turn relies on the <em>scoring</em> parameter. Therefore, higher threshold values result in a lower amount of recognized bigrams, see the example below.</p>
+<pre class="python"><code>from gensim.models.phrases import Phrases, Phraser
+
+# first train a bigram
+bigram2 = Phrases(r.words, threshold = 50)
+trigram2 = Phrases(bigram[r.words], threshold = 50)
+
+# print the original sentence
+print(&quot;Original Sentence:&quot;)</code></pre>
+<pre><code>## Original Sentence:</code></pre>
+<pre class="python"><code>print(r.twords[86])
+
+# run the sentence through the trigram model</code></pre>
+<pre><code>## [&#39;this&#39;, &#39;rule&#39;, &#39;does&#39;, &#39;not&#39;, &#39;apply&#39;, &#39;to&#39;, &#39;a&#39;, &#39;transfer&#39;, &#39;to&#39;, &#39;an&#39;, &#39;individual&#39;, &#39;who&#39;, &#39;is&#39;, &#39;not&#39;, &#39;a&#39;, &#39;lineal&#39;, &#39;descendant&#39;, &#39;of&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;if&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;has&#39;, &#39;any&#39;, &#39;living&#39;, &#39;lineal&#39;, &#39;descendants&#39;]</code></pre>
+<pre class="python"><code>print(f&quot;\n\nPhrased Sentence:&quot;)</code></pre>
+<pre><code>## 
+## 
+## Phrased Sentence:</code></pre>
+<pre class="python"><code>print(trigram2[bigram2[r.twords[86]]])</code></pre>
+<pre><code>## [&#39;this&#39;, &#39;rule&#39;, &#39;does_not&#39;, &#39;apply&#39;, &#39;to&#39;, &#39;a&#39;, &#39;transfer&#39;, &#39;to&#39;, &#39;an&#39;, &#39;individual&#39;, &#39;who&#39;, &#39;is&#39;, &#39;not&#39;, &#39;a&#39;, &#39;lineal_descendant&#39;, &#39;of&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;if&#39;, &#39;the&#39;, &#39;transferor&#39;, &#39;has&#39;, &#39;any&#39;, &#39;living&#39;, &#39;lineal_descendants&#39;]</code></pre>
+<p>Note: “this” and “rule” were not concatenated as “this_rule” with the higher threshold. A higher value means fewer phrases.</p>
+<p>Again, this threshold depends on the scoring function used to specify how the model evaluates potential phrases. Gensim allows the user to change the default function to npmi_scorer(), or they can provide their own method.</p>
 <p><a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
 <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>
 <a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>

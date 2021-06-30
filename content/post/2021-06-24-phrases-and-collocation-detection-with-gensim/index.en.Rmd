@@ -34,7 +34,7 @@ library(tokenizers)
 textpath <- "/home/alex/Projects/taxembed/data/corpora/irs_corpi/instructions.rda"
 load(textpath)
 ```
-*instructions.rda* refers to a vector of strings, where each string is the ripped text from an individual IRS instruction posting. We don't need all of the data for a simple trial run, so we'll just use the first four instruction texts (three for training, one for testing).
+*instructions.rda* refers to a vector of strings, where each string is the ripped text from an individual IRS instruction posting. We don't need all of the data for a simple trial run, so we'll just use the first seven instruction texts (six for training, one for testing).
 
 Unfortunately, the example corpus isn't very clean; regex expressions, like `\n` and `\t`, riddle the text with symbols that don't belong in the n-gram vocabulary. Luckily, the `stringr` package provides a few removal functions that can target these expressions and eliminate duplicate spaces. Afterwords, we can apply a sentence and word tokenizer to split the data into the form of a list, where each entry consists of a character vector of the separated words. We then convert the objects to their python equivalents, where we can access them by `r.words` for the training set and `r.twords` for the testing set.
 ```{r, results = 'hold'}
@@ -87,9 +87,29 @@ print(r.twords[86])
 
 # run the sentence through the trigram model
 print(f"\n\nPhrased Sentence:")
-print(trigram[r.twords[86]])
+print(trigram[bigram[r.twords[86]]])
 ```
-Note that we don't see any trigrams in this example, but a quick look at the trigram model shows a plethora of 3 word tuples.
+Note: we must run the sentence through the bigram layer first, and then through the subsequent, higher-level phrasers thereafter. Some vocabulary terms look like 4-grams, but they're just two bigrams attached in the trigram process.
+
+In the training stage, we can further adjust the phraser using the tuning parameters available with the `Phrases()` function. *min_count* will ignore all words and bigrams with total collected counts lower than the provided value, and *threshold* will determine the sensitivity of the model when detecting n-grams. The parser will accept Phrase A followed by Phrase B as a bigram only if it scores higher than this threshold value, which in turn relies on the *scoring* parameter. Therefore, higher threshold values result in a lower amount of recognized bigrams, see the example below.
+```{python, warning = FALSE, message = FALSE, results = 'hold'}
+from gensim.models.phrases import Phrases, Phraser
+
+# first train a bigram
+bigram2 = Phrases(r.words, threshold = 50)
+trigram2 = Phrases(bigram[r.words], threshold = 50)
+
+# print the original sentence
+print("Original Sentence:")
+print(r.twords[86])
+
+# run the sentence through the trigram model
+print(f"\n\nPhrased Sentence:")
+print(trigram2[bigram2[r.twords[86]]])
+```
+Note: "this" and "rule" were not concatenated as "this_rule" with the higher threshold. A higher value means fewer phrases.  
+  
+Again, this threshold depends on the scoring function used to specify how the model evaluates potential phrases. Gensim allows the user to change the default function to npmi_scorer(), or they can provide their own method.
 
 ^[https://radimrehurek.com/gensim/models/phrases.html]
 ^[https://radimrehurek.com/gensim_3.8.3/models/phrases.html]
