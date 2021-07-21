@@ -1,0 +1,73 @@
+---
+title: 'Collocation with Quanteda'
+author: Alex Wold
+date: '2021-07-14'
+slug: ''
+categories:
+  - N-Grams
+  - Multiprocessing
+tags:
+  - quanteda
+  - N-Grams
+  - Collocation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-14T02:24:05-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+For this project, we'll use the following libraries:
+```{r, warning = FALSE, message = FALSE}
+library(quanteda)
+library(stringr)
+```
+
+Quanteda provides a well-equipped, far-reaching alternative to Gensim's *Phrases* suite. Where the latter requires a 'bottoms-up' approach with repeated calls to the `Phrases()` function, the former supplies a more holistic and inclusive methodology with just one pass through the corpus, even arming the user with a collection of tokenizers and dfm functionalities.
+
+To begin working with quanteda, we start by creating our example corpus: a short assembly of some IRS instructions. Again, "instructions.rda" refers to a vector of strings, where each string encompasses the text belonging to an entire article.
+```{r}
+# load IRS instruction vector
+textpath <- "/home/alex/Projects/taxembed/data/corpora/irs_corpi/instructions.rda"
+load(textpath)
+
+# create an example corpus from the first several instruction texts
+excor <- paste(instext[1], instext[2], instext[3], instext[4], instext[5], instext[6])
+
+# clean the text
+excor <- str_replace_all(excor, pattern = "(\\n|\\t)+", replacement = " ")
+excor <- str_replace_all(excor, pattern = "\\s{2,}", replacement = " ")
+```
+
+Now, we can split the example corpus into tokens with quanteda's `tokens()` function. We can remove punctuation, symbols, numbers, urls, separators, and hyphens by setting their corresponding flags, but for this example, we'll leave the text intact.
+```{r}
+# tokenize the corpus
+extoks <- tokens(excor)
+```
+
+```{r}
+# list first few tokens
+toksngram <- tokens_ngrams(extoks, n = 2)
+head(toksngram, 50)
+```
+Note: some of these overlap, which can cause confusion
+
+Quanteda allows the simultaneous use of n-grams with different dimensions. That is, the `tokens_ngrams()` includes the **n** parameter (an integer vector) that allows the function to identify a range of **n**-grams in the same pass. For example, it can identify bigrams, trigrams, and 4-grams without exclusion or the need to cycle text back through the parser.
+```{r}
+# remember, tokens_ngrams takes a tokens object
+tokens_ngrams(tokens(c("a b c d e", "c d e f g")), n = 2:4)
+```
+
+In addition to varying n-grams, Quanteda also allows concurrent processing with the `quanteda_options()` settings. Usually, `RcppParallel::defaultNumThreads()` defines the default number of threads for parallelized functions, but we can manually adjust that parameter too. Note: we can change this once per session
+```{r, results = "hold"}
+# adjust the number of threads
+quanteda_options(threads = 8)
+
+# show the current number
+quanteda_options("threads")
+```
+

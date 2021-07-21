@@ -1,0 +1,114 @@
+---
+title: "Collocation with text2vec"
+author: Alex Wold
+date: '2021-07-20'
+slug: collocation-with-text2vec
+categories:
+  - N-Grams
+  - text2vec
+tags:
+  - N-Grams
+  - Collocation
+  - text2vec
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-20T23:03:05-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+For this project, we'll use the following libraries:
+```{r, warning = FALSE, message = FALSE}
+library(text2vec)
+library(stringr)
+library(tokenizers)
+library(doParallel)
+library(parallel)
+```
+Like with the Quanteda and Phrases suites, we want to take advantage of collocation statistics to extract n-grams from text data to better inform our downstream tasks. The `text2vec` package offers a concise, efficient, and flexible alternative to the aforementioned, see [their documentation](http://text2vec.org/collocations.html#example).
+
+Here, we'll prepare a small corpus from a few IRS instruction articles. Unfortunately, needless formatting characters still litter the text, so we'll use the `stringr` package to remove the despoiling trammels and use `tokenizers` to split the data into sentences.
+```{r, warning = FALSE, message = FALSE, results = "hold"}
+# load IRS instruction vector
+textpath <- "/home/alex/Projects/taxembed/data/corpora/irs_corpi/instructions.rda"
+load(textpath)
+
+# create an example corpus from the first several instruction texts
+excor <- paste(instext[1], instext[2], instext[3], instext[4], instext[5], instext[6])
+
+# clean the text
+excor <- str_replace_all(excor, pattern = "(\\n|\\t)+", replacement = " ")
+excor <- str_replace_all(excor, pattern = "\\s{2,}", replacement = " ")
+
+# tokenize the corpus into sentences
+sentences <- unlist(tokenize_sentences(excor))
+
+head(sentences, 4)
+```
+In order to utilize the `text2vec` phrase-building tools, we'll need to call `itoken()` to create an iterator object that generates vocabularies or DTM (also TCM) matrices. This function requires either  
+
+* A List
+  + all elements of the input list should be tokenized character vectors
+* A Raw Character Text Source
+  + which also requires a tokenizer function
+* ifiles from files
+  + which also requires a function to read the file and a tokenizer
+* idir from a directory
+  + which also requires a function to read in the files and a tokenizer
+* ifiles_parallel from files in parallel ^[https://www.rdocumentation.org/packages/text2vec/versions/0.6/topics/itoken]
+
+We'll supply `itoken()` with the first option. Note: the `text2vec` package sets `space_tokenizer()` as `itoken()'s` default tokenizer; therefore, we only need to pass in a list of sentences. After constructing the appropriate iterable, we can pass the token object to 
+```{r, results = "hold"}
+# create a text2vec friendly iterable
+tok <- itoken(sentences, preprocessor = tolower)
+
+# fit the n-gram phraser model
+ngram <- Collocations$new()
+ngram$fit(tok, n_iter = 5)
+```
+The **n_iter** parameter tells the Collocations model to iterate over the input iterable **n_iter** times, allowing us to control the size of the n-grams in the return, provided the algorithm doesn't converge before it reaches **n_iter**.
+
+
+The model stores learned collocations in the **collocation_stat** field. Notice that some of the associations aren't very meaningful, but we can adjust the sensitivity by either modifying the results directly, calling prune, or through the following parameters  
+
+* collocation_count_min
+  + the model will discard any collocation instances observed fewer times than this threshold
+* pmi_min, gensim_min, lfmd_min, and llr_min
+  + the model will discard any collocation instances that score less than the provided values for these variables
+  
+Below, we investigate the results of the ngram model and prune it using a pmi_min threshold.
+```{r, results = "hold"}
+# display the first 10 collocations
+head(ngram$collocation_stat[, c(-3, -4, -5)], 10)
+
+# prune the collocations
+ngram$prune(pmi_min = 7)
+head(ngram$collocation_stat[, c(-3, -4, -5)], 10)
+```
+
+
+We can also use parallel processing to create DTMS and TCMS, but we need to register the parallel backend first with the `doParallel` package and these iterables do not work with the Collocations fit function.
+```{r, results = "hold", warning = FALSE}
+# detect the number of cores, create a makeCluster
+ncores <- (detectCores() - 1)
+c1 <- makeCluster(ncores)
+
+# register the parallel backend
+registerDoParallel(c1, ncores)
+
+# create a text2vec friendly iterable
+ptok <- itoken_parallel(sentences, preprocessor = tolower)
+
+# create a dtm
+vectorizer <- hash_vectorizer(ngram = c(1, 5))
+dtm1 <- create_dtm(ptok, vectorizer = vectorizer)
+
+# stop the cluster
+stopCluster(c1)
+```
+
+Like Quanteda, `text2vec` doesn't provide a direct way to substitute the new n-grams into the text; however, the package offers a panopoly of useful functions targeted at creating and evaluating word embeddings. They provide an analogy checker - similar in theory to Gensim's `evaluate_word_analogies()` function, a similarity function, and GLOVE trainer.
