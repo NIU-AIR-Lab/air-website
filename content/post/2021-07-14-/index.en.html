@@ -27,6 +27,7 @@ projects: []
 
 <p>For this project, we’ll use the following libraries:</p>
 <pre class="r"><code>library(quanteda)
+library(quanteda.textstats)
 library(stringr)</code></pre>
 <p>Quanteda provides a well-equipped, far-reaching alternative to Gensim’s <em>Phrases</em> suite. Where the latter requires a ‘bottoms-up’ approach with repeated calls to the <code>Phrases()</code> function, the former supplies a more holistic and inclusive methodology with just one pass through the corpus, even arming the user with a collection of tokenizers and dfm functionalities.</p>
 <p>To begin working with quanteda, we start by creating our example corpus: a short assembly of some IRS instructions. Again, “instructions.rda” refers to a vector of strings, where each string encompasses the text belonging to an entire article.</p>
@@ -43,8 +44,9 @@ excor &lt;- str_replace_all(excor, pattern = &quot;\\s{2,}&quot;, replacement = 
 <p>Now, we can split the example corpus into tokens with quanteda’s <code>tokens()</code> function. We can remove punctuation, symbols, numbers, urls, separators, and hyphens by setting their corresponding flags, but for this example, we’ll leave the text intact.</p>
 <pre class="r"><code># tokenize the corpus
 extoks &lt;- tokens(excor)</code></pre>
-<pre class="r"><code>toksngram &lt;- tokens_ngrams(extoks, n = 2)
-head(toksngram, 50)</code></pre>
+<pre class="r"><code># list first few tokens
+toksngram &lt;- tokens_ngrams(extoks, n = 2)
+print(toksngram)</code></pre>
 <pre><code>## Tokens consisting of 1 document.
 ## text1 :
 ##  [1] &quot;Instructions_for&quot;       &quot;for_Form&quot;               &quot;Form_56&quot;               
@@ -52,9 +54,10 @@ head(toksngram, 50)</code></pre>
 ##  [7] &quot;/_2019&quot;                 &quot;2019_)&quot;                 &quot;)_Notice&quot;              
 ## [10] &quot;Notice_Concerning&quot;      &quot;Concerning_Fiduciary&quot;   &quot;Fiduciary_Relationship&quot;
 ## [ ... and 80,966 more ]</code></pre>
-<p>Quanteda allows the simultaneous use of n-grams with different dimensions. That is, the <code>tokens_ngrams()</code> includes the <strong>n</strong> parameter (an integer vector) that allows the function to identify a range of <strong>n</strong>-grams in the same pass. For example, it can identify bigrams, trigrams, and 4-grams without exclusion or the need to cycle text back through the parser.</p>
+<p>Quanteda allows the simultaneous use of n-grams with different dimensions. That is, the <code>tokens_ngrams()</code> includes the <strong>n</strong> parameter (an integer vector) that allows the function to identify a range of <strong>n</strong>-grams in the same pass. For example, it can identify bigrams, trigrams, and 4-grams without exclusion or the need to cycle text back through the parser. We use a different text input here to better clarify the results.</p>
 <pre class="r"><code># remember, tokens_ngrams takes a tokens object
-tokens_ngrams(tokens(c(&quot;a b c d e&quot;, &quot;c d e f g&quot;)), n = 2:4)</code></pre>
+ngrams2 &lt;- tokens_ngrams(tokens(c(&quot;a b c d e&quot;, &quot;c d e f g&quot;)), n = 2:4)
+print(ngrams2)</code></pre>
 <pre><code>## Tokens consisting of 2 documents.
 ## text1 :
 ## [1] &quot;a_b&quot;     &quot;b_c&quot;     &quot;c_d&quot;     &quot;d_e&quot;     &quot;a_b_c&quot;   &quot;b_c_d&quot;   &quot;c_d_e&quot;  
@@ -63,6 +66,10 @@ tokens_ngrams(tokens(c(&quot;a b c d e&quot;, &quot;c d e f g&quot;)), n = 2:4)<
 ## text2 :
 ## [1] &quot;c_d&quot;     &quot;d_e&quot;     &quot;e_f&quot;     &quot;f_g&quot;     &quot;c_d_e&quot;   &quot;d_e_f&quot;   &quot;e_f_g&quot;  
 ## [8] &quot;c_d_e_f&quot; &quot;d_e_f_g&quot;</code></pre>
+<p>Note: Quanteda dumps all possible n-grams in the output, which cause some of these overlap with one another.</p>
+<p>Quanteda summarizes the n-gram output with <code>textstat_collocations()</code>, a function that returns a data.frame object of collocations and their scores and statistics.</p>
+<pre class="r"><code>tstat &lt;- textstat_collocations(ngrams2)
+print(tstat)</code></pre>
 <p>In addition to varying n-grams, Quanteda also allows concurrent processing with the <code>quanteda_options()</code> settings. Usually, <code>RcppParallel::defaultNumThreads()</code> defines the default number of threads for parallelized functions, but we can manually adjust that parameter too. Note: we can change this once per session</p>
 <pre class="r"><code># adjust the number of threads
 quanteda_options(threads = 8)
@@ -70,3 +77,4 @@ quanteda_options(threads = 8)
 # show the current number
 quanteda_options(&quot;threads&quot;)</code></pre>
 <pre><code>## [1] 8</code></pre>
+<p>Quanteda offers some additional functions, like locating keywords-in context and text-matrix operations, but it fails to supply the user with an efficient means of substituting the collocations back into the corpus like Gensim’s Phrases API.</p>

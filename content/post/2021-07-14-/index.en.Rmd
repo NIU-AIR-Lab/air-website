@@ -24,6 +24,7 @@ projects: []
 For this project, we'll use the following libraries:
 ```{r, warning = FALSE, message = FALSE}
 library(quanteda)
+library(quanteda.textstats)
 library(stringr)
 ```
 
@@ -52,14 +53,21 @@ extoks <- tokens(excor)
 ```{r}
 # list first few tokens
 toksngram <- tokens_ngrams(extoks, n = 2)
-head(toksngram, 50)
+print(toksngram)
 ```
-Note: some of these overlap, which can cause confusion
 
-Quanteda allows the simultaneous use of n-grams with different dimensions. That is, the `tokens_ngrams()` includes the **n** parameter (an integer vector) that allows the function to identify a range of **n**-grams in the same pass. For example, it can identify bigrams, trigrams, and 4-grams without exclusion or the need to cycle text back through the parser.
+Quanteda allows the simultaneous use of n-grams with different dimensions. That is, the `tokens_ngrams()` includes the **n** parameter (an integer vector) that allows the function to identify a range of **n**-grams in the same pass. For example, it can identify bigrams, trigrams, and 4-grams without exclusion or the need to cycle text back through the parser. We use a different text input here to better clarify the results.
 ```{r}
 # remember, tokens_ngrams takes a tokens object
-tokens_ngrams(tokens(c("a b c d e", "c d e f g")), n = 2:4)
+ngrams2 <- tokens_ngrams(tokens(c("a b c d e", "c d e f g")), n = 2:4)
+print(ngrams2)
+```
+Note: Quanteda dumps all possible n-grams in the output, which cause some of these overlap with one another.
+
+Quanteda summarizes the n-gram output with `textstat_collocations()`, a function that returns a data.frame object of collocations and their scores and statistics.
+```{r, results = "hide", warning = FALSE, message = FALSE}
+tstat <- textstat_collocations(ngrams2)
+print(tstat)
 ```
 
 In addition to varying n-grams, Quanteda also allows concurrent processing with the `quanteda_options()` settings. Usually, `RcppParallel::defaultNumThreads()` defines the default number of threads for parallelized functions, but we can manually adjust that parameter too. Note: we can change this once per session
@@ -71,3 +79,4 @@ quanteda_options(threads = 8)
 quanteda_options("threads")
 ```
 
+Quanteda offers some additional functions, like locating keywords-in context and text-matrix operations, but it fails to supply the user with an efficient means of substituting the collocations back into the corpus like Gensim's Phrases API.
